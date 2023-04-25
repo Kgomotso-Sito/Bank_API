@@ -70,9 +70,6 @@ namespace Bank_API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AccountHolderId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Action")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -85,11 +82,9 @@ namespace Bank_API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AccountHolderId");
-
                     b.HasIndex("BankAccountId");
 
-                    b.ToTable("AuditLogs");
+                    b.ToTable("Audit_Logs");
                 });
 
             modelBuilder.Entity("BankAPI.Models.BankAccount", b =>
@@ -129,19 +124,11 @@ namespace Bank_API.Migrations
 
             modelBuilder.Entity("BankAPI.Models.AuditLog", b =>
                 {
-                    b.HasOne("BankAPI.Models.AccountHolder", "AccountHolder")
-                        .WithMany()
-                        .HasForeignKey("AccountHolderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("BankAPI.Models.BankAccount", "BankAccount")
                         .WithMany()
                         .HasForeignKey("BankAccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("AccountHolder");
 
                     b.Navigation("BankAccount");
                 });
