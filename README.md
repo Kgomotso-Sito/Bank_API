@@ -10,3 +10,11 @@
   * MsSQL
   * Swagger
   * JWT
+
+## Steps to setup
+  ### Database
+    * docker pull mcr.microsoft.com/mssql/server
+    * docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=<StrongPassword123>" -p 1433:1433 --name BankAccountDb -d mcr.microsoft.com/mssql/server
+    * Run migration
+      * dotnet ef migrations add InitialCreate
+      * 
