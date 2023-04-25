@@ -2,8 +2,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BankAPI.Models;
 
-[Table("Audit")]
-public class Audit
+[Table("AuditLogs")]
+public class AuditLog
 {
     public int Id { get; set; }
     public string Action { get; set; }

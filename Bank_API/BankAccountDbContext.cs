@@ -19,4 +19,8 @@ public class BankAccountDbContext : DbContext
         .Property(b => b.AvailableBalance)
             .HasColumnType("decimal(18,2)");
     }
+
+    public DbSet<BankAccount> BankAccounts { get; set; }
+    public DbSet<AccountHolder> AccountHolders { get; set; }
+    public DbSet<AuditLog> AuditLogs { get; set; }
 }

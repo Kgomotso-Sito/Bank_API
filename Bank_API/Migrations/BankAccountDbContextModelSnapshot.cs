@@ -62,6 +62,36 @@ namespace Bank_API.Migrations
                     b.ToTable("Account_Holders");
                 });
 
+            modelBuilder.Entity("BankAPI.Models.AuditLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AccountHolderId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("BankAccountId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountHolderId");
+
+                    b.HasIndex("BankAccountId");
+
+                    b.ToTable("AuditLogs");
+                });
+
             modelBuilder.Entity("BankAPI.Models.BankAccount", b =>
                 {
                     b.Property<int>("Id")
@@ -95,6 +125,25 @@ namespace Bank_API.Migrations
                     b.HasIndex("AccountHolderId");
 
                     b.ToTable("Bank_Accounts");
+                });
+
+            modelBuilder.Entity("BankAPI.Models.AuditLog", b =>
+                {
+                    b.HasOne("BankAPI.Models.AccountHolder", "AccountHolder")
+                        .WithMany()
+                        .HasForeignKey("AccountHolderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BankAPI.Models.BankAccount", "BankAccount")
+                        .WithMany()
+                        .HasForeignKey("BankAccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AccountHolder");
+
+                    b.Navigation("BankAccount");
                 });
 
             modelBuilder.Entity("BankAPI.Models.BankAccount", b =>

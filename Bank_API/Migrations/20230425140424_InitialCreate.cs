@@ -54,6 +54,44 @@ namespace Bank_API.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "AuditLogs",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Action = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    AccountHolderId = table.Column<int>(type: "int", nullable: false),
+                    BankAccountId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AuditLogs", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AuditLogs_Account_Holders_AccountHolderId",
+                        column: x => x.AccountHolderId,
+                        principalTable: "Account_Holders",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_AuditLogs_Bank_Accounts_BankAccountId",
+                        column: x => x.BankAccountId,
+                        principalTable: "Bank_Accounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AuditLogs_AccountHolderId",
+                table: "AuditLogs",
+                column: "AccountHolderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AuditLogs_BankAccountId",
+                table: "AuditLogs",
+                column: "BankAccountId");
+
             migrationBuilder.CreateIndex(
                 name: "IX_Bank_Accounts_AccountHolderId",
                 table: "Bank_Accounts",
@@ -63,6 +101,9 @@ namespace Bank_API.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "AuditLogs");
+
             migrationBuilder.DropTable(
                 name: "Bank_Accounts");
 
