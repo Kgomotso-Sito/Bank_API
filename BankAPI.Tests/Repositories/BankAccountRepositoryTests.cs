@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using BankAPI.Models;
 using BankAPI.Repositories;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
@@ -136,6 +137,38 @@ public class BankAccountRepositoryTests
             var result = await repository.GetBankAccountByAccountNumber("000000000");
 
             Assert.Null(result);
+        }
+    }
+
+    [Fact]
+    public void UpdateBankAccount_UpdatesBankAccountInDatabaseAsync()
+    {
+        using (var context = new BankAccountDbContext(_options))
+        {
+            var repository = new BankAccountRepository(context);
+            var bankAccount = new BankAccount
+            {
+                AccountNumber = "1234567890",
+                AccountType = AccountType.Cheque,
+                Name = "Test Account",
+                AccountStatus = AccountStatus.Active,
+                AvailableBalance = 100.00m
+            };
+            context.BankAccounts.Add(bankAccount);
+            context.SaveChanges();
+        }
+
+        using (var context = new BankAccountDbContext(_options))
+        {
+            var repository = new BankAccountRepository(context);
+
+            var bankAccountToUpdate = repository.GetBankAccountByAccountNumber("1234567890").Result;
+            bankAccountToUpdate.AvailableBalance = 50.00m;
+
+            repository.UpdateBankAccount(bankAccountToUpdate);
+
+            var updatedBankAccount = repository.GetBankAccountByAccountNumber("1234567890").Result;
+            Assert.Equal(50.00m, updatedBankAccount.AvailableBalance);
         }
     }
 }

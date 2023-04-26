@@ -14,13 +14,15 @@ public class BankAccountControllerTests
     private readonly Mock<ILogger<BankAccountController>> _logger;
     private readonly Mock<IAccountHolderService> _accountHolderService;
     private readonly Mock<IBankAccountService> _bankAccountService;
+    private readonly Mock<ITransactionService> _transactionService;
 
     public BankAccountControllerTests()
     {
         _logger = new Mock<ILogger<BankAccountController>>();
         _accountHolderService = new Mock<IAccountHolderService>();
         _bankAccountService = new Mock<IBankAccountService>();
-        _bankAccountController = new BankAccountController(_logger.Object, _accountHolderService.Object, _bankAccountService.Object);
+        _transactionService = new Mock<ITransactionService>();
+        _bankAccountController = new BankAccountController(_logger.Object, _accountHolderService.Object, _bankAccountService.Object, _transactionService.Object);
     }
 
 
@@ -83,7 +85,7 @@ public class BankAccountControllerTests
     [Fact]
     public async Task GetBankAccountsByIdNumber_ReturnsOk_WhenAccountsFound()
     {
-        string validIdNumber = "1234567890123"; 
+        string validIdNumber = "1234567890123";
         AccountHolder accountHolder = new AccountHolder { Id = 1 };
         IEnumerable<BankAccount> bankAccounts = new List<BankAccount> { new BankAccount { Id = 1, AccountNumber = "123", AccountType = AccountType.Cheque } };
         _accountHolderService.Setup(s => s.GetAccountHolderByIdNumber(validIdNumber)).ReturnsAsync(accountHolder);
@@ -94,5 +96,80 @@ public class BankAccountControllerTests
         OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
         IEnumerable<BankAccount> returnedBankAccounts = Assert.IsAssignableFrom<IEnumerable<BankAccount>>(okResult.Value);
         Assert.Equal(bankAccounts.Count(), returnedBankAccounts.Count());
+    }
+
+    [Fact]
+    public void Withdraw_ReturnsBadRequest_WhenWithdrawalFails()
+    {
+        _transactionService.Setup(s => s.Withdraw("1234567890", 50.00m)).
+            Returns(false);
+        var withdrawalRequest = new WithdrawalRequest { AccountNumber = "1234567890", Amount = 50.00m };
+
+        var result = _bankAccountController.Withdraw(withdrawalRequest);
+
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
+
+    [Fact]
+    public void Withdraw_ReturnsOkResult_WhenValidWithdrawal()
+    {
+        _transactionService.Setup(s => s.Withdraw("1234567890", 50.00m)).
+            Returns(true);
+        var withdrawalRequest = new WithdrawalRequest { AccountNumber = "1234567890", Amount = 50.00m };
+
+        var result = _bankAccountController.Withdraw(withdrawalRequest);
+
+        Assert.IsType<OkObjectResult>(result);
+    }
+
+    [Fact]
+    public void Withdraw_ReturnsNotFound_WhenAccountNotFound()
+    {
+        _transactionService.Setup(s => s.Withdraw(It.IsAny<string>(), It.IsAny<decimal>())).Throws(new ArgumentException("Bank account not found."));
+
+        var result = _bankAccountController.Withdraw(new WithdrawalRequest { AccountNumber = "1234567890", Amount = 100.00m });
+
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
+
+    [Fact]
+    public void Withdraw_ReturnsBadRequest_WhenAccountNotActive()
+    {
+        _transactionService.Setup(s => s.Withdraw(It.IsAny<string>(), It.IsAny<decimal>())).Throws(new InvalidOperationException("Bank account is not active."));
+
+        var result = _bankAccountController.Withdraw(new WithdrawalRequest { AccountNumber = "1234567890", Amount = 100.00m });
+
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
+
+    [Fact]
+    public void Withdraw_ReturnsBadRequest_WhenAmountIsInvalid()
+    {
+        _transactionService.Setup(s => s.Withdraw(It.IsAny<string>(), It.IsAny<decimal>())).Throws(new ArgumentException("Withdrawal amount must be greater than zero."));
+
+        var result = _bankAccountController.Withdraw(new WithdrawalRequest { AccountNumber = "1234567890", Amount = -100.00m });
+
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
+
+
+    [Fact]
+    public void Withdraw_ReturnsBadRequest_WhenInsufficientFunds()
+    {
+        _transactionService.Setup(s => s.Withdraw(It.IsAny<string>(), It.IsAny<decimal>())).Throws(new InvalidOperationException("Insufficient funds."));
+
+        var result = _bankAccountController.Withdraw(new WithdrawalRequest { AccountNumber = "1234567890", Amount = 100.00m });
+
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
+
+    [Fact]
+    public void Withdraw_ReturnsBadRequest_WhenFullAmountWithdrawalNotAllowed()
+    {
+        _transactionService.Setup(s => s.Withdraw(It.IsAny<string>(), It.IsAny<decimal>())).Throws(new InvalidOperationException("A full available amount withdrawal is allowed on Fixed Deposit account type."));
+
+        var result = _bankAccountController.Withdraw(new WithdrawalRequest { AccountNumber = "1234567890", Amount = 100.00m });
+
+        Assert.IsType<BadRequestObjectResult>(result);
     }
 }
