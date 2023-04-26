@@ -1,8 +1,15 @@
-﻿using BankAPI;
+﻿using BankAPI.Repositories;
+using BankAPI.Services;
+using BankAPI;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add services to the container.
+builder.Services.AddScoped<IAccountHolderRepository, AccountHolderRepository>();
+builder.Services.AddScoped<IBankAccountRepository, BankAccountRepository>();
+builder.Services.AddScoped<IAccountHolderService, AccountHolderService>();
+builder.Services.AddScoped<IBankAccountService, BankAccountService>();
 
 builder.Services.AddControllers();
 builder.Services.AddDbContext<BankAccountDbContext>(options =>
