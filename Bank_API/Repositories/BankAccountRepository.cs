@@ -28,6 +28,12 @@ public class BankAccountRepository : IBankAccountRepository
         return bankAccount;
     }
 
+    public void UpdateBankAccount(BankAccount bankAccount)
+    {
+        _context.BankAccounts.Update(bankAccount);
+        _context.SaveChanges();
+    }
+
 }
 
 

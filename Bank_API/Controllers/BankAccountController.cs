@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using BankAPI.Services;
+using BankAPI.Models;
 
 namespace BankAPI.Controllers;
 
@@ -10,16 +11,20 @@ public class BankAccountController : ControllerBase
     private readonly ILogger<BankAccountController> _logger;
     private readonly IAccountHolderService _accountHolderService;
     private readonly IBankAccountService _bankAccountService;
+    private readonly ITransactionService _transactionService;
+
 
     public BankAccountController(ILogger<BankAccountController> logger,
         IAccountHolderService accountHolderService,
-        IBankAccountService bankAccountService)
+        IBankAccountService bankAccountService,
+        ITransactionService transactionService)
     {
         _logger = logger;
         _accountHolderService = accountHolderService;
         _bankAccountService = bankAccountService;
+        _transactionService = transactionService;
     }
-        
+
     [HttpGet("GetBankAccountByAccountNumber")]
     public async Task<IActionResult> GetBankAccountByAccountNumber([FromQuery] string AccountNumber)
     {
@@ -70,6 +75,35 @@ public class BankAccountController : ControllerBase
             }
 
             return Ok(bankAccounts);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+        }
+    }
+
+    [HttpPost("withdraw")]
+    public IActionResult Withdraw(WithdrawalRequest withdrawalRequest)
+    {
+        try
+        {
+            bool withdrawalResult = _transactionService.Withdraw(withdrawalRequest.AccountNumber, withdrawalRequest.Amount);
+            if (withdrawalResult)
+            {
+                return Ok("Withdrawal completed successfully");
+            }
+            else
+            {
+                return BadRequest("Withdrawal failed");
+            }
+        }
+        catch (ArgumentException)
+        {
+            return BadRequest("Request not valid");
+        }
+        catch (InvalidOperationException)
+        {
+            return BadRequest("Transaction not allowed");
         }
         catch (Exception ex)
         {

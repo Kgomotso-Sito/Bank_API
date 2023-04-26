@@ -7,6 +7,7 @@ public interface IBankAccountRepository
 {
     Task<List<BankAccount>> GetBankAccountsByAccountHolderId(int AccountHolderId);
     Task<BankAccount?> GetBankAccountByAccountNumber(string AccountNumber);
+    void UpdateBankAccount(BankAccount bankAccount);
 }
 
 
