@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using BankAPI.Services;
 using BankAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BankAPI.Controllers;
 
@@ -25,6 +26,7 @@ public class BankAccountController : ControllerBase
         _transactionService = transactionService;
     }
 
+    [Authorize]
     [HttpGet("GetBankAccountByAccountNumber")]
     public async Task<IActionResult> GetBankAccountByAccountNumber([FromQuery] string AccountNumber)
     {
@@ -50,6 +52,7 @@ public class BankAccountController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpGet("GetBankAccountsByIdNumber")]
     public async Task<IActionResult> GetBankAccountsByIdNumber([FromQuery] string IdNumber)
     {
@@ -82,6 +85,7 @@ public class BankAccountController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpPost("withdraw")]
     public IActionResult Withdraw(WithdrawalRequest withdrawalRequest)
     {

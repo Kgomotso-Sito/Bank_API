@@ -11,10 +11,12 @@
   * Swagger
   * JWT
 
-## Steps to setup
-  ### Database
-    * docker pull mcr.microsoft.com/mssql/server
-    * docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=<StrongPassword123>" -p 1433:1433 --name BankAccountDb -d mcr.microsoft.com/mssql/server
-    * Run migration
-      * dotnet ef migrations add InitialCreate
-      * 
+## Database
+   * docker pull mcr.microsoft.com/mssql/server
+   * docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=<StrongPassword123>" -p 1433:1433 --name BankAccountDb -d mcr.microsoft.com/mssql/server
+   
+## Additionl infomation
+  * Swagger runs on https://localhost:7174/swagger/index.html
+  * login to authenticate use { "username": "bankUser", "password": "bankPassword"}
+  * User the token to unlock API calls
+  * Test Data, Id Number: 1234567891011 and Account Number: 1234567890
